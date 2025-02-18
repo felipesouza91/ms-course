@@ -1,5 +1,6 @@
 package dev.fsantana.hrpayroll.resources;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import dev.fsantana.hrpayroll.entities.Payment;
 import dev.fsantana.hrpayroll.services.PaymentService;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,15 @@ public class PaymentResource {
         this.paymentService = paymentService;
     }
 
+    @HystrixCommand(fallbackMethod = "getPaymentAlternatives")
     @GetMapping("/{workerId}/days/{daysValues}")
     public ResponseEntity<Payment> calculePayment(@PathVariable Long workerId, @PathVariable Integer daysValues) {
         Payment payment = paymentService.getPayment(workerId, daysValues);
+        return ResponseEntity.ok(payment);
+    }
+
+    public ResponseEntity<Payment> getPaymentAlternatives(Long workerId, Integer daysValues) {
+        Payment payment = new Payment("Brann", daysValues, 400.0);
         return ResponseEntity.ok(payment);
     }
 }
