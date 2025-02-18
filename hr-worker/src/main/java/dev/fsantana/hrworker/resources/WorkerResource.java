@@ -36,7 +36,9 @@ public class WorkerResource {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Worker> findById(@PathVariable Long id) {
+    public ResponseEntity<Worker> findById(@PathVariable Long id) throws InterruptedException {
+        System.out.println("No Worker Resource");
+        Thread.sleep(3000L);
 
         Worker worker = workerRepository.findById(id).orElse(null);
         if(Objects.isNull(worker)) {
