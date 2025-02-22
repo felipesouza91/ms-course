@@ -5,11 +5,14 @@ import dev.fsantana.hroauth.feign.UserClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -19,11 +22,12 @@ public class UserService {
         this.userClient = userClient;
     }
 
-    public User  findByEmail(String email) {
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         ResponseEntity<User> byEmail = userClient.getByEmail(email);
         if(byEmail.getBody() == null) {
             logger.error("Email not found", email);
-            throw new IllegalArgumentException("Email not found");
+            throw new UsernameNotFoundException("Email not found");
         }
         logger.info("Email  found", email);
 
