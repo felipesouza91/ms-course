@@ -1,5 +1,7 @@
 package dev.fsantana.hroauth.config;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +13,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+@RefreshScope
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter  {
@@ -19,20 +22,23 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private final JwtAccessTokenConverter jwtAccessTokenConverter;
     private final JwtTokenStore jwtTokenStore;
     private final AuthenticationManager authenticationManager;
+    private final String clientName;
+    private final String clientSecret;
 
     public AuthorizationServerConfig(
             BCryptPasswordEncoder passwordEncoder,
             JwtAccessTokenConverter jwtAccessTokenConverter,
             JwtTokenStore jwtTokenStore,
-            AuthenticationManager authenticationManager) {
+            AuthenticationManager authenticationManager,
+            @Value("${oauth.client.name}") String clientName,
+            @Value("${oauth.client.secret}") String clientSecret) {
         this.passwordEncoder = passwordEncoder;
         this.jwtAccessTokenConverter = jwtAccessTokenConverter;
         this.jwtTokenStore = jwtTokenStore;
         this.authenticationManager = authenticationManager;
+        this.clientName = clientName;
+        this.clientSecret = clientSecret;
     }
-
-
-
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -43,8 +49,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
-                .withClient("myappname123")
-                .secret(passwordEncoder.encode("myappname123"))
+                .withClient(clientName)
+                .secret(passwordEncoder.encode(clientSecret))
                 .scopes("READ", "WRITE")
                 .authorizedGrantTypes("password")
                         .accessTokenValiditySeconds(60*60*24);
