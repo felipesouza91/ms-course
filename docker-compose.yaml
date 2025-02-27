@@ -1,0 +1,120 @@
+services:
+  hr-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: hr_db_user
+      POSTGRES_PASSWORD: 1234567
+    volumes:
+      - ./scripts:/docker-entrypoint-initdb.d
+    networks:
+      - hr-db-network
+
+  hr-config-server:
+    build:
+      context: ./hr-config-server/
+      dockerfile: Dockerfile
+    networks:
+      - nt-local-hr
+
+  hr-eureka-server:
+    build:
+      context: ./hr-eureka-server/
+      dockerfile: Dockerfile
+    command: ["./wait-for-it.sh", "hr-config-server:8888",  "-t", "30", "--", "java", "-jar" , "app.jar"]
+    ports:
+      - 8761:8761
+    networks:
+      - nt-local-hr
+
+  hr-api-gateway-zuul:
+    build:
+      context: ./hr-api-gateway-zuul/
+      dockerfile: Dockerfile
+    environment:
+      CONFIG_SERVER_HOST: hr-config-server
+      EUREKA_SERVER_HOST: hr-eureka-server
+    depends_on:
+      - hr-config-server
+      - hr-eureka-server
+    command: [ "./wait-for-it.sh", "hr-config-server:8888",  "-t", "30", "--","java", "-jar" , "app.jar" ]
+
+    networks:
+      - nt-local-hr
+    ports:
+      - 8765:8765
+
+  hr-oauth:
+    build:
+      context: ./hr-oauth/
+      dockerfile: Dockerfile
+    environment:
+      CONFIG_SERVER_HOST: hr-config-server
+      EUREKA_SERVER_HOST: hr-eureka-server
+    command: [ "./wait-for-it.sh", "hr-config-server:8888", "-t", "30", "--","java", "-jar" , "app.jar" ]
+
+    depends_on:
+      - hr-config-server
+      - hr-eureka-server
+    networks:
+      - nt-local-hr
+
+  hr-payroll:
+    build:
+      context: ./hr-payroll/
+      dockerfile: Dockerfile
+    environment:
+      CONFIG_SERVER_HOST: hr-config-server
+      EUREKA_SERVER_HOST: hr-eureka-server
+    command: [ "./wait-for-it.sh", "hr-config-server:8888", "-t", "30", "--", "java", "-jar" , "app.jar" ]
+
+    depends_on:
+      - hr-config-server
+      - hr-eureka-server
+    networks:
+      - nt-local-hr
+
+  hr-user:
+    build:
+      context: ./hr-user/
+      dockerfile: Dockerfile
+    environment:
+      CONFIG_SERVER_HOST: hr-config-server
+      EUREKA_SERVER_HOST: hr-eureka-server
+      DATABASE_HOST: hr-db
+      DATABASE_USERNAME: hr_db_user
+      DATABASE_PASSWORD: 1234567
+      PROFILE: prod
+    command: [ "./wait-for-it.sh", "hr-config-server:8888", "-t", "30", "--", "java", "-jar" , "app.jar" ]
+
+    depends_on:
+      - hr-config-server
+      - hr-eureka-server
+      - hr-db
+    networks:
+      - nt-local-hr
+      - hr-db-network
+
+  hr-worker:
+    build:
+      context: ./hr-worker/
+      dockerfile: Dockerfile
+    environment:
+      CONFIG_SERVER_HOST: hr-config-server
+      EUREKA_SERVER_HOST: hr-eureka-server
+      DATABASE_HOST: hr-db
+      DATABASE_USERNAME: hr_db_user
+      DATABASE_PASSWORD: 1234567
+      PROFILE: prod
+    command: [ "./wait-for-it.sh", "hr-config-server:8888", "-t", "30", "--" ,"java", "-jar" , "app.jar" ]
+
+    depends_on:
+      - hr-config-server
+      - hr-eureka-server
+      - hr-db
+    networks:
+      - nt-local-hr
+      - hr-db-network
+
+networks:
+  nt-local-hr:
+  hr-db-network:
