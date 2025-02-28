@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: classpath:/db/migrations/01_create_worker_table.sql
