@@ -6,6 +6,8 @@ services:
       POSTGRES_PASSWORD: 1234567
     volumes:
       - ./scripts:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
     networks:
       - hr-db-network
 
