@@ -28,9 +28,8 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
             "/hr-payroll/**",
             "/hr-user/**",
             "/actuator/**",
-            "/hr-worker/actuator/**",
-            "/hr-user/actuator/**",
-            "/hr-payroll/actuator/**"};
+            "/hr-oauth/**",
+            "/**/actuator/**"};
 
     private final JwtTokenStore tokenStore;
 
@@ -50,8 +49,8 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                .authorizeRequests()
                .antMatchers(PUBLIC).permitAll()
                .antMatchers(HttpMethod.GET, OPERATOR).hasAnyRole("OPERATOR", "ADMIN")
-               .antMatchers(ADMIN).hasAnyRole("ADMIN")
-               .anyRequest().authenticated();
+               .antMatchers(ADMIN).hasRole("ADMIN")
+               .anyRequest().denyAll();
 
        http.cors().configurationSource(corsConfigurationSource());
     }
