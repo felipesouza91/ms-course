@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: classpath:/db/migrations/01_create_user_role.sql
+  - include:
+      file: classpath:/db/migrations/02_create_table_user.sql
+  - include:
+      file: classpath:/db/migrations/03_create_table_user_role.sql
+  - include:
+      file: classpath:/db/seeds/04_seed_roles_and_admin_user.sql
