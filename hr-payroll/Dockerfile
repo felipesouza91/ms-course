@@ -9,4 +9,4 @@ WORKDIR /app
 COPY --from=builder /usr/builder/target/*.jar ./app.jar
 RUN curl https://raw.githubusercontent.com/vishnubob/wait-for-it/refs/heads/master/wait-for-it.sh > wait-for-it.sh
 RUN chmod +x wait-for-it.sh
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]
